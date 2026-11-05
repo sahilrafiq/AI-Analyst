@@ -1,0 +1,20 @@
+# Core (needed to run the agent, the helpers, reports, Excel and Power BI tools)
+pandas>=2.0
+numpy>=1.24
+scipy>=1.10
+matplotlib>=3.7
+openpyxl>=3.1
+python-docx>=1.0
+ipykernel>=6.0
+jupyter_client>=8.0
+
+# Optional: lets the model use these in its own code (the agent tells the model which ones are installed)
+# scikit-learn
+# statsmodels
+# seaborn
+# xlsxwriter
+# jupyterlab
+
+# Minimum versions are conservative estimates. Tested with Python 3.12 / 3.14, pandas 3.0, numpy 2.4,
+# scipy 1.17, matplotlib 3.10, openpyxl 3.1.5 and python-docx 1.2. Ollama itself is installed separately
+# from https://ollama.com

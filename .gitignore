@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Agent working folders and generated output (these contain your data)
+workspace/
+bench*work/
+powerbi_output*/
+transcript_*.md
+session_*.py
+report_*.md
+report_*.docx
+report_*.html
+
+# Data files: never commit your own data (use `git add -f file` for a deliberate small example)
+*.csv
+*.xlsx
+*.xls
+*.parquet
+
+# Misc
+.env
+*.log
+.vscode/
+.idea/
+Thumbs.db
