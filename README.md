@@ -12,6 +12,15 @@ your data never leaves the machine.
 > reducing* them: tested helper functions, automatic guards, and benchmarks with known answers. Please read
 > [Limitations](#limitations-and-safety) before relying on any result.
 
+## 👨‍💻 Developer
+
+**Sahil Rafiq**
+
+* GitHub: [@sahilrafiq](https://github.com/sahilrafiq)
+* LinkedIn: [sahil-rafiq](https://www.linkedin.com/in/sahil-rafiq/)
+* Portfolio: [sahil_rafiq](https://sahilrafiq.vercel.app/)
+---
+
 ## What you can ask it
 
 - "Clean this file, profile it, compare revenue across countries, and save an Excel summary and a chart."
@@ -193,3 +202,7 @@ MIT - see [LICENSE](LICENSE).
 
 [Ollama](https://ollama.com), [Jupyter](https://jupyter.org), pandas, SciPy, openpyxl, python-docx, and the open model
 families used here (Gemma by Google, Qwen by Alibaba).
+
+---
+
+*Built with ❤️ by [Sahil Rafiq](https://github.com/sahilrafiq)*
