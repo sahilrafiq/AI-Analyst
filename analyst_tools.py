@@ -834,9 +834,11 @@ def _workbook_facts(path):
     return load_workbook(path, data_only=True), load_workbook(path)
 
 
-def inspect_workbook(path, verbose=True):
+def inspect_workbook(path, verbose=True, **unknown):
     """Describe every sheet of an Excel file: size, header row, merged cells, formulas, charts, and the
     detected columns. Use this first on an unfamiliar workbook. Result keys: text, sheets (list of dicts)."""
+    if unknown:
+        raise TypeError(f"inspect_workbook() got unexpected argument(s) {sorted(unknown)}. It accepts: path, verbose")
     wb, wbf = _workbook_facts(path)
     infos, lines = [], [f"{Path(path).name}: {len(wb.worksheets)} sheet(s)"]
     for ws in wb.worksheets:
@@ -873,10 +875,16 @@ def inspect_workbook(path, verbose=True):
     return Result(text=text, sheets=infos)
 
 
-def read_excel_smart(path, sheet=None, header_row=None, verbose=True):
+def read_excel_smart(path, sheet=None, header_row=None, verbose=True, sheet_name=None, **unknown):
     """Read a messy Excel sheet into a DataFrame: finds the header row below title/blank lines, fills
     vertically merged cells, drops empty rows/columns and Total/Subtotal rows (which would double count),
-    and says what it did. sheet = name or position (default: the biggest sheet). header_row = Excel row number to force."""
+    and says what it did. sheet = name or position (default: the biggest sheet); sheet_name is accepted as the same thing
+    (pandas style). header_row = Excel row number to force."""
+    if unknown:
+        raise TypeError(f"read_excel_smart() got unexpected argument(s) {sorted(unknown)}. It accepts: path, sheet (or sheet_name), header_row, verbose")
+    if sheet is not None and sheet_name is not None and sheet != sheet_name:
+        raise TypeError("pass either sheet or sheet_name, not both with different values")
+    sheet = sheet_name if sheet is None else sheet
     wb, wbf = _workbook_facts(path)
     names = wb.sheetnames
     if sheet is None:

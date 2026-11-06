@@ -77,7 +77,7 @@ Ready-made helpers are already imported (tested - prefer them over writing the s
 - top_correlations(df, n=8)
 - quick_chart(df, x, y=None, hue=None, kind='bar', agg='sum', title=None, path='chart.png', top_n=None); kinds: bar, line, hist, scatter, box
 - inspect_workbook(path) -> describes every sheet of an Excel file (header row, merged cells, formulas, columns); use it first on unfamiliar workbooks
-- read_excel_smart(path, sheet=None) -> DataFrame from a messy sheet: finds the header under title rows, fills merged cells, drops Total/Subtotal rows (and says so). Use it instead of pd.read_excel for business workbooks
+- read_excel_smart(path, sheet=None) (sheet_name= also works) -> DataFrame from a messy sheet: finds the header under title rows, fills merged cells, drops Total/Subtotal rows (and says so). Use it instead of pd.read_excel for business workbooks
 - save_excel(path, df_or_dict_of_dfs, totals=False, formulas=None, charts=None, sheet_name='Data') -> formatted workbook. Name the sheet with sheet_name='Summary' or {'Summary': df}. totals=True adds a Total row of live SUM formulas; formulas={'Margin': '{Profit}/{Revenue}'} adds a live-formula column (do not add that column to the DataFrame yourself); charts=[{'kind':'bar','x':'Country','y':'Revenue','title':'...'}] adds native Excel charts (kinds: bar, barh, line, pie). Aggregate with groupby BEFORE charting
 Always start from clean_columns(pd.read_csv(file)): it already parses text like '$1,234.50', '10%' and dates correctly. Never parse such text yourself (replacing commas breaks numbers).
 If the task asks for a specific test, format or file name, follow it exactly."""

@@ -62,6 +62,24 @@ Small models are unreliable at free-form statistics, so the design leans on thre
 - Tested hardware: Intel i5-9300H, 16 GB RAM, GTX 1650 (4 GB) - about 10 tokens/s with the default model.
   A 4 GB GPU cannot hold larger models; more VRAM gives faster, stronger models.
 
+## Choosing a model for your hardware
+
+Only the first row below was measured by the author; the others come from published guides and community reports and
+are suggestions to try. The benchmarks in this repo are the way to compare models on *your* machine:
+`python bench_hard.py --models gemma4:e4b qwen3.5:9b`.
+
+| GPU memory | Suggestion | Status |
+|---|---|---|
+| 4 GB (GTX 1650 laptop) | `gemma4:e4b` (partly on the CPU), about 10 tokens/s | measured: 9/9 on `bench_hard.py` |
+| 8 GB (RTX 2060 Super / 3060 / 4060) | `gemma4:e4b` first, then try `qwen3.5:9b` | untested by the author; expected several times faster |
+| 12-16 GB | `qwen3.5:9b` or `gemma4:12b` with a longer context | untested |
+| 24 GB or more | 26-35B class models | untested |
+
+Rules of thumb: a Q4 model needs about 0.5-0.7 GB per billion parameters plus room for the context, so keep
+`--num-ctx` at 8192 on small cards; check `ollama ps` shows the model running 100% on the GPU (a split between CPU and
+GPU is what makes answers slow); more parameters do not automatically mean better results here - on the same tasks
+`gemma4:e4b` clearly beat `qwen3.5:4b`.
+
 ## Install
 
 ```powershell
@@ -147,8 +165,8 @@ Results with `gemma4:e4b` on the hardware above (28 Oct - 3 Nov 2026, local runs
 
 | Benchmark | Result |
 |---|---|
-| `bench_hard.py` (9 tasks) | 9/9 in the two latest runs; 8/9 in the two before. The single failure was different each time |
-| `bench_excel.py` (4 tasks) | 4/4 on the latest run (2/4, 3/4 and 3/4 in the three runs before, which exposed bugs that were then fixed) |
+| `bench_hard.py` (9 tasks) | 9/9 in the three latest runs; 8/9 in the two before. The single failure was different each time |
+| `bench_excel.py` (4 tasks) | 3/4 on the latest run (4/4 the run before; 2/4, 3/4 and 3/4 in the three runs before that). The latest failure was a keyword the helper did not accept (`sheet_name=`); fixed since, not yet re-benchmarked |
 | `qwen3.5:4b`, first five hard tasks | 2/5 in two runs, so `gemma4:e4b` is the default |
 
 Please read these numbers as indicative: a small local model is not deterministic, each configuration was run only a few times, and the helper
