@@ -98,6 +98,8 @@ Rules:
 SHEET_SPEC = re.compile(r"(?:sheet|tab|worksheet)\s+(?:named|called)\s+['\"\u201c\u2018]([^'\"\u201d\u2019]+)['\"\u201d\u2019]", re.I)
 COLUMN_SPEC = re.compile(r"column\s+(?:named|called)\s+['\"\u201c\u2018]([^'\"\u201d\u2019]+)['\"\u201d\u2019]", re.I)
 ROW_DROP = re.compile(r"\.iloc\[\s*:\s*-\d+|\.head\(\s*-\d+|\[\s*:\s*-\d+\s*\]|\.drop\([^)]*index\[\s*-\d+")
+COLUMNS_LIST_SPEC = re.compile(r"columns?\s+(?:named|called)\s+(?![\'\"\u201c\u2018])([A-Za-z_]\w*(?:\s*(?:,|\band\b)\s*[A-Za-z_]\w*)*)", re.I)
+_NAME_STOP = {"a", "an", "the", "one", "two", "its", "their", "with", "for", "and"}
 REQUIRED_LINE = re.compile(r"Print exactly (?:one|1) line:\s*(\w+)", re.I)
 NONE_RESULT = re.compile(r"RESULT[^\n]*=\s*(None|nan|inf)\b", re.I)
 
@@ -377,11 +379,16 @@ class Agent:
         with open(self.transcript_path, "a", encoding="utf-8") as f:
             f.write(f"\n## {heading}\n\n{text}\n")
 
-    def _spec_problems(self, task, since):
-        """Check workbooks created during this task against sheet/column names the task asked for."""
+    def _xlsx_snapshot(self):
+        return {p.name: p.stat().st_mtime_ns for p in self.workdir.glob("*.xlsx") if not p.name.startswith("~$")}
+
+    def _spec_problems(self, task, before):
+        """Check workbooks created or changed during this task (not the input files) against the sheet/column names the task asked for."""
         sheets_wanted, cols_wanted = SHEET_SPEC.findall(task), COLUMN_SPEC.findall(task)
-        files = [p for p in self.workdir.glob("*.xlsx") if p.stat().st_mtime >= since - 1 and not p.name.startswith("~$")]
-        if not (sheets_wanted or cols_wanted) or not files:
+        loose = [p for m in COLUMNS_LIST_SPEC.finditer(task) for p in re.split(r"\s*(?:,|\band\b)\s*", m.group(1)) if p and p.lower() not in _NAME_STOP]
+        now = self._xlsx_snapshot()
+        files = [self.workdir / n for n, m in now.items() if before.get(n) != m]
+        if not (sheets_wanted or cols_wanted or loose) or not files:
             return []
         try:
             from openpyxl import load_workbook
@@ -395,7 +402,9 @@ class Agent:
         except Exception:
             return []
         return ([f"no sheet named '{x}' (sheets found: {sorted(names)})" for x in sheets_wanted if x not in names]
-                + [f"no column named '{x}'" for x in cols_wanted if x not in headers])
+                + [f"no column named '{x}'" for x in cols_wanted if x not in headers]
+                + [f"no column named '{x}' (the task asked for exactly this name; do not rename it)" for x in loose
+                   if x not in headers and not any(h.startswith(x + " ") for h in headers)])
 
     def _checked(self, reply):
         """Flag numbers in the final summary that the analysis output never produced."""
@@ -453,7 +462,7 @@ class Agent:
 
         m_req = REQUIRED_LINE.search(task)
         required, reminded, first_cell = (m_req.group(1) if m_req else None), False, len(self.history)
-        spec_reminded, row_drop_warned, t_start = False, False, time.time()
+        spec_reminded, row_drop_warned, xlsx_before = False, False, self._xlsx_snapshot()
         last_key, repeats = None, 0
         last_ok_code, last_ok_out, same_code = None, "", 0
         for step in range(1, self.max_steps + 1):
@@ -468,7 +477,7 @@ class Agent:
                     self.messages.append({"role": "user", "content": f"The task asked you to print a line starting with {required}, but your code never printed it (writing it in your answer does not count). Run code that prints exactly that line."})
                     continue
                 if not spec_reminded:
-                    problems = self._spec_problems(task, t_start)
+                    problems = self._spec_problems(task, xlsx_before)
                     if problems:
                         spec_reminded = True
                         self.messages.append({"role": "user", "content": "The workbook you created does not follow the task: " + "; ".join(problems)

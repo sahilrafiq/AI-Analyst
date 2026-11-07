@@ -166,7 +166,7 @@ Results with `gemma4:e4b` on the hardware above (28 Oct - 3 Nov 2026, local runs
 | Benchmark | Result |
 |---|---|
 | `bench_hard.py` (9 tasks) | 9/9 in the three latest runs; 8/9 in the two before. The single failure was different each time |
-| `bench_excel.py` (4 tasks) | 3/4 on the latest run (4/4 the run before; 2/4, 3/4 and 3/4 in the three runs before that). The latest failure was a keyword the helper did not accept (`sheet_name=`); fixed since, not yet re-benchmarked |
+| `bench_excel.py` (4 tasks) | 3/4 in the two latest runs (4/4 in the run before; 2/4, 3/4 and 3/4 earlier). The two latest failures: a keyword the helper did not accept (`sheet_name=`) and a column renamed although the task named it. Both fixed since, not yet re-benchmarked |
 | `qwen3.5:4b`, first five hard tasks | 2/5 in two runs, so `gemma4:e4b` is the default |
 
 Please read these numbers as indicative: a small local model is not deterministic, each configuration was run only a few times, and the helper
