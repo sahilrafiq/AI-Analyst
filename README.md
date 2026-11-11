@@ -8,10 +8,6 @@ reports and Power BI preparation.
 It was built and tested on a modest laptop (16 GB RAM, 4 GB GTX 1650). No cloud service and no API key is needed, and
 your data never leaves the machine.
 
-> **Status: working prototype.** A small local model makes mistakes. This project is mostly about *catching and
-> reducing* them: tested helper functions, automatic guards, and benchmarks with known answers. Please read
-> [Limitations](#limitations-and-safety) before relying on any result.
-
 ## 👨‍💻 Developer
 
 **Sahil Rafiq**
@@ -19,7 +15,10 @@ your data never leaves the machine.
 * GitHub: [@sahilrafiq](https://github.com/sahilrafiq)
 * LinkedIn: [sahil-rafiq](https://www.linkedin.com/in/sahil-rafiq/)
 * Portfolio: [sahil_rafiq](https://sahilrafiq.vercel.app/)
----
+
+> **Status: working prototype.** A small local model makes mistakes. This project is mostly about *catching and
+> reducing* them: tested helper functions, automatic guards, and benchmarks with known answers. Please read
+> [Limitations](#limitations-and-safety) before relying on any result.
 
 ## What you can ask it
 
@@ -165,13 +164,34 @@ Results with `gemma4:e4b` on the hardware above (28 Oct - 3 Nov 2026, local runs
 
 | Benchmark | Result |
 |---|---|
-| `bench_hard.py` (9 tasks) | 9/9 in the three latest runs; 8/9 in the two before. The single failure was different each time |
+| `bench_hard.py` (9 tasks) | 9/9 in the four latest runs; 8/9 in the two before. The single failure was different each time |
 | `bench_excel.py` (4 tasks) | 4/4 on the latest run (189 s). Across seven runs made while the helpers were being fixed it scored 2, 3, 3, 4, 3, 3, 4 out of 4; each failure exposed a bug that was fixed afterwards |
 | `qwen3.5:4b`, first five hard tasks | 2/5 in two runs, so `gemma4:e4b` is the default |
 
 Please read these numbers as indicative: a small local model is not deterministic, each configuration was run only a few times, and the helper
 changes made after the last benchmark runs (automatic date-order detection, Power BI tools) are unit-tested but not
 re-benchmarked. Re-run the scripts on your own machine to see your numbers.
+
+## Tests
+
+The repository has 85 automated tests that need no Ollama, no GPU and no extra packages: the model is replaced by
+scripted replies and the Jupyter kernel by a stand-in.
+
+```powershell
+python -m unittest discover -s tests        # about 1 minute; pytest also works
+```
+
+| File | What it checks |
+|---|---|
+| `tests/test_analyst_tools.py` | helpers against scipy / numpy / hand calculations (tests, regression, forecasts), date-order detection, Excel reading and writing; formulas are recalculated in LibreOffice when it is installed (skipped otherwise) |
+| `tests/test_agent.py` | the guards and the loop with scripted model replies: nan and `p=0` rejection, repeated code, required output lines, requested sheet/column names, blocked row-dropping, report verification notes |
+| `tests/test_report.py` | Markdown to Word/HTML conversion and the number checks |
+| `tests/test_powerbi_tools.py` | star schema (lossless when read back from the CSV files), Power Query and DAX text, expected values against a plain-Python reference |
+| `tests/test_benchmarks.py` | the benchmarks themselves: correct solutions pass, wrong ones fail, the planted answers have not drifted |
+
+Many tests replay failures found during development. To check that the tests can fail, seven of those earlier bugs
+were re-introduced one at a time; each made the suite fail. Last run: all 85 pass on Windows 10 with Python 3.14 (1 skipped,
+the LibreOffice formula check) and on Linux with Python 3.12. Please open an issue if something fails on your setup.
 
 **Checked by hand:** in Power BI Desktop, yearly totals, last-year values and YoY % produced by the generated measures
 matched `expected_values.xlsx` on a 113,036-row sales file. The monthly measures should still be checked by the user.
@@ -205,11 +225,13 @@ analyst_tools.py  helper functions (statistics, cleaning, charts, Excel)
 report.py         Markdown -> Word/HTML and the number checks
 powerbi_tools.py  Power BI star schema, Power Query (M), DAX, expected values
 benchmark.py  bench_agent.py  bench_hard.py  bench_excel.py     benchmarks with planted answers
+tests/            automated tests (python -m unittest discover -s tests)
+CHANGELOG.md
 ```
 
 ## Contributing
 
-Issues and pull requests are welcome. The most useful reports include the `transcript_*.md` of a failed run (remove any
+Issues and pull requests are welcome; please run the tests before opening a pull request. The most useful reports include the `transcript_*.md` of a failed run (remove any
 private data first) and your hardware and model.
 
 ## License
